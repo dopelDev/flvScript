@@ -2,12 +2,17 @@ from wget import download
 from csv import reader
 from os import chdir, mkdir, path
 from urllib.request import urlopen
+from sys import exit
+from urllib.error import HTTPError
 
 
 def flvScript():
 
     print('name anime')
     directoryName = input()
+
+    if directoryName is '' or not path.exists(directoryName + '.csv'):
+        return exit()
 
     if not path.exists(directoryName):
 
@@ -25,16 +30,26 @@ def flvScript():
         tmp = tmp.replace("['", '')
         tmp = tmp.replace("']", '')
 
-        print(tmp)
-        response = urlopen(tmp)
-        response = response.getcode()
-        print(response)
+        print(tmp, '\n')
+
         dumpName = directoryName + ' - ' + str(url + 1)
         secondPass = path.exists(dumpName)
+        print(dumpName, '\n')
 
-        if response is 200 and secondPass is False:
+        if secondPass is False:
+            try:
+                response = urlopen(tmp)
+                response = response.getcode()
+                print(response)
+            except HTTPError as e:
+                print(e)
+                continue
 
-            download(tmp, dumpName)
+            if response is 200:
+                download(tmp, dumpName)
+                print('\n')
+        else:
+            continue
 
-
-flvScript()
+if __name__ == '__main__':
+    flvScript()
